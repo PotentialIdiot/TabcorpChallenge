@@ -7,28 +7,40 @@
 //
 
 import UIKit
+import SafariServices
+import RxSwift
 
 class DetailsTableViewController: UITableViewController {
+    // Launch general info
     @IBOutlet weak var launchName: UILabel!
     @IBOutlet weak var launchDate: UILabel!
     @IBOutlet weak var launchStatus: UILabel!
     
+    // payload
     @IBOutlet weak var launchPayloads: UILabel!
     
+    // site
     @IBOutlet weak var launchSitename: UILabel!
     
+    // Rocket general info
     @IBOutlet weak var rocketName: UILabel!
     @IBOutlet weak var rocketCountry: UILabel!
     @IBOutlet weak var rocketCompany: UILabel!
     @IBOutlet weak var rocketDescription: UILabel!
     
+    // wikipedia
+    @IBOutlet weak var wikipediaButton: UIButton!
+    
     var launchFlightNumber: Int!
     var launch: Launch!
     var rocket: Rocket!
     
+    let disposeBag = DisposeBag()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        wikipediaButton.isEnabled = false
+        
         fetchLaunch()
     }
 
@@ -37,58 +49,61 @@ class DetailsTableViewController: UITableViewController {
         return super.tableView(tableView, numberOfRowsInSection: 0)
     }
 
-    // maybe hide button until description is populated
     @IBAction func moreInfoTapped(_ sender: Any) {
-        UIApplication.shared.open(rocket.wikipedia)
+        let svc = SFSafariViewController(url: rocket.wikipedia)
+        present(svc, animated: true, completion: nil)
     }
 }
 
 extension DetailsTableViewController {
-    func fetchLaunch() {
-        let url = URL(string: "https://api.spacexdata.com/v3/launches")!
-            .appendingPathComponent("\(launchFlightNumber!)")
-        let request = NetworkRequest(url: url)
-        request.execute { [weak self] (data) in
-            if let data = data {
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .formatted(DateFormatter.fullISO8601)
-                if let launch = try? decoder.decode(Launch.self, from: data) {
-                    self?.set(launch)
-                    self?.launch = launch
-                    self?.fetchRocket()
-                    self?.tableView.reloadData()
+    
+    private func fetchLaunch() {
+        
+        let url = URL(string: Constants.base_api + Constants.api_launches + String(launchFlightNumber))!
+        let resource = Resource<Launch>(url: url)
+        
+        URLRequest.load(resource: resource)
+            .subscribe(onNext: { [weak self] result in
+                if let result = result {
+                    self?.launch = result
+                    self?.fetchRocket(by: result.rocketId)
+                    DispatchQueue.main.async {
+                        self?.set(result)
+                        self?.tableView.reloadData()
+                    }
                 }
-            }
-        }
+            }).disposed(by: disposeBag)
+        
     }
     
     func set(_ launch: Launch) {
         launchName.text = launch.missionName
-        launchDate.text = launch.date.description
+        launchDate.text = launch.date.formatted
         launchStatus.text = launch.succeeded?.formatted ?? "Unknown"
-        
         launchPayloads.text = launch.payloads
         launchSitename.text = launch.site
     }
     
-    func fetchRocket() {
-        let url = URL(string: "https://api.spacexdata.com/v3/rockets")!
-            .appendingPathComponent("\(launch.rocketId)")
-        let request = NetworkRequest(url: url)
-        request.execute { [weak self] (data) in
-            if let data = data {
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .formatted(DateFormatter.fullISO8601)
-                if let rocket = try? decoder.decode(Rocket.self, from: data) {
-                    self?.setRocket(rocket)
-                    self?.rocket = rocket
-                    self?.tableView.reloadData()
+    private func fetchRocket(by id: String) {
+        
+        let url = URL(string: Constants.base_api + Constants.api_rockets + id)!
+        let resource = Resource<Rocket>(url: url)
+        
+        URLRequest.load(resource: resource)
+            .subscribe(onNext: { [weak self] result in
+                if let result = result {
+                    self?.rocket = result
+                    DispatchQueue.main.async {
+                        self?.set(result)
+                        self?.tableView.reloadData()
+                        self?.wikipediaButton.isEnabled = true
+                    }
                 }
-            }
-        }
+            }).disposed(by: disposeBag)
+        
     }
     
-    func setRocket(_ rocket: Rocket) {
+    func set(_ rocket: Rocket) {
         rocketName.text = rocket.rocketName
         rocketCountry.text = rocket.country
         rocketCompany.text = rocket.company

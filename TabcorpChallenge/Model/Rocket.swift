@@ -9,7 +9,6 @@
 import Foundation
 
 struct Rocket {
-    
     let rocketName: String
     let country: String
     let company: String

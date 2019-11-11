@@ -1,5 +1,5 @@
 //
-//  GroupedTableViewController.swift
+//  ListTableViewController.swift
 //  TabcorpChallenge
 //
 //  Created by Weng hou Chan on 10/11/19.
@@ -7,24 +7,27 @@
 //
 
 import UIKit
+import RxSwift
+
+enum SortFilter {
+    case letter, year
+}
 
 class ListTableViewController: UITableViewController {
     
-    var sectionHeaders = [String]()
-    var launchesDict = [String: [Launch]]()
-    
+    let disposeBag = DisposeBag()
+
     var launches = [Launch]()
+
+    var sectionHeaders = [String]()
+    var launchesVMDict = [String: LaunchListViewModel]()
+    
+    var sortFilter: SortFilter = .letter
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let url = URL(string: "https://api.spacexdata.com/v3/launches?limit=10")!
-        let request = NetworkRequest(url: url)
-        request.execute { [weak self] (data) in
-            if let data = data {
-                self?.decode(data)
-            }
-        }
+        fetchLaunches()
 
         NotificationCenter.default.addObserver(self, selector: #selector(updateSuccessFilter), name: .updateSuccessFilter, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateSortFilter), name: .updateSortFilter, object: nil)
@@ -35,18 +38,17 @@ class ListTableViewController: UITableViewController {
         
         let value = value.object as! SuccessFilter
         switch value {
-        case .Success:
+        case .success:
             filteredLaunches = launches.filter({ $0.succeeded == true })
-        case .Failure:
+        case .failure:
             filteredLaunches = launches.filter({ $0.succeeded == false })
-        case .Unknown:
+        case .unknown:
             filteredLaunches = launches.filter({ $0.succeeded == nil })
-        case .None:
+        case .all:
             filteredLaunches = launches
         }
         
-        // dependency on filter launches func issue
-        sort(filteredLaunches, by: .letter)
+        sort(filteredLaunches, by: sortFilter)
         tableView.reloadData()
     }
     
@@ -64,29 +66,9 @@ class ListTableViewController: UITableViewController {
         }
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let indexPath = tableView.indexPathForSelectedRow,
-            let detailsViewController = segue.destination as? DetailsTableViewController {
-            detailsViewController.launchFlightNumber = launchesDict[sectionHeaders[indexPath.section]]![indexPath.row].flightNumber
-        }
-    }
-    
-    enum SortFilter {
-        case letter, year
-    }
-    
-    func sort(_ launches: [Launch], by filter: SortFilter) {
-        var groupedLaunches = [String: [Launch]]()
-        switch filter {
-        case .letter:
-            groupedLaunches = Dictionary(grouping: launches, by: { String($0.missionName.uppercased().first!) })
-        case .year:
-            groupedLaunches = Dictionary(grouping: launches, by: { $0.date.description })
-        }
-        
-        launchesDict = groupedLaunches
-        sectionHeaders = Array(groupedLaunches.keys).sorted()
-    }
+}
+
+extension ListTableViewController {
     // MARK: - Table view data source
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -94,52 +76,90 @@ class ListTableViewController: UITableViewController {
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return sectionHeaders.count
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return launchesDict[sectionHeaders[section]]?.count ?? 0
+        let key = sectionHeaders[section]
+        return launchesVMDict[key]?.launchesVM.count ?? 0
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "LaunchCell", for: indexPath) as! LaunchCell
 
         // Configure the cell...
-        let launchInfo = launchesDict[sectionHeaders[indexPath.section]]![indexPath.row]
-        cell.missionLabel.text = launchInfo.missionName
-        cell.dateLabel.text = launchInfo.date.description
-        cell.statusLabel.text = launchInfo.succeeded?.formatted ?? "Unknown"
+        let key = sectionHeaders[indexPath.section]
+        let launchVM = launchesVMDict[key]!.launchAt(indexPath.row)
+        
+        launchVM.mission.asDriver(onErrorJustReturn: "")
+            .drive(cell.missionLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        launchVM.date.asDriver(onErrorJustReturn: "")
+            .drive(cell.dateLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        launchVM.status.asDriver(onErrorJustReturn: "")
+            .drive(cell.statusLabel.rx.text)
+            .disposed(by: disposeBag)
 
         return cell
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let indexPath = tableView.indexPathForSelectedRow,
+            let detailsViewController = segue.destination as? DetailsTableViewController {
+            let key = sectionHeaders[indexPath.section]
+            let flightNumber = launchesVMDict[key]!.launchAt(indexPath.row).launch.flightNumber
+            detailsViewController.launchFlightNumber = flightNumber
+        }
     }
 
 }
 
 private extension ListTableViewController {
-    func decode(_ data: Data) {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .formatted(DateFormatter.fullISO8601)
-        do {
-            launches = try decoder.decode([Launch].self, from: data)
-            print(launches)
-            sort(launches, by: .letter)
-            tableView.reloadData()
-        } catch {
-            let title = "Oops, something went wrong"
-            let message = "Please make sure you have the latest version of the app."
-            let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let dismissAction = UIAlertAction(title: title, style: .default, handler: nil)
-            alertController.addAction(dismissAction)
-            show(alertController, sender: nil)
+    private func fetchLaunches() {
+        
+        let url = URL(string: Constants.base_api + Constants.api_launches + "?limit=10")!
+        let resource = Resource<[Launch]>(url: url)
+        
+        URLRequest.load(resource: resource)
+            .subscribe(onNext: { [weak self] result in
+                if let result = result {
+                    self?.launches = result
+                    self?.sort(result, by: .letter)
+                    DispatchQueue.main.async {
+                        self?.tableView.reloadData()
+                    }
+                }
+            }).disposed(by: disposeBag)
+        
+    }
+    
+    private func sort(_ launches: [Launch], by filter: SortFilter) {
+        // group launches by filter
+        var groupedLaunches = [String: [Launch]]()
+        switch filter {
+        case .letter:
+            groupedLaunches = Dictionary(grouping: launches, by: { String($0.missionName.uppercased().first!) })
+        case .year:
+            groupedLaunches = Dictionary(grouping: launches, by: {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy"
+                return dateFormatter.string(from: $0.date)
+            })
+            
         }
+        
+        // transform [launch] -> launchListViewModel
+        var groupedLaunchesVM = [String: LaunchListViewModel]()
+        for key in groupedLaunches.keys {
+            groupedLaunchesVM[key] = groupedLaunches[key].map { LaunchListViewModel($0) }
+        }
+        
+        launchesVMDict = groupedLaunchesVM
+        sectionHeaders = Array(groupedLaunches.keys).sorted()
+        
+        sortFilter = filter
     }
 }
-
-class LaunchCell: UITableViewCell {
-    @IBOutlet weak var missionLabel: UILabel!
-    @IBOutlet weak var dateLabel: UILabel!
-    @IBOutlet weak var statusLabel: UILabel!
-}
-

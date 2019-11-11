@@ -1,5 +1,5 @@
 //
-//  NetworkRequest.swift
+//  URLRequest+Extensions.swift
 //  TabcorpChallenge
 //
 //  Created by Weng hou Chan on 10/11/19.
@@ -8,22 +8,6 @@
 
 import Foundation
 import RxSwift
-
-class NetworkRequest {
-    let session = URLSession(configuration: .ephemeral, delegate: nil, delegateQueue: .main)
-    let url: URL
-    
-    init(url: URL) {
-        self.url = url
-    }
-    
-    func execute(withCompletion completion: @escaping (Data?) -> Void) {
-        let task = session.dataTask(with: url, completionHandler: { (data: Data?, _, _) -> Void in
-            completion(data)
-        })
-        task.resume()
-    }
-}
 
 struct Resource<T: Decodable> {
     let url: URL

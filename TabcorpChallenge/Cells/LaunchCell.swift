@@ -7,3 +7,11 @@
 //
 
 import Foundation
+import UIKit
+
+class LaunchCell: UITableViewCell {
+    @IBOutlet weak var missionLabel: UILabel!
+    @IBOutlet weak var dateLabel: UILabel!
+    @IBOutlet weak var statusLabel: UILabel!
+}
+
