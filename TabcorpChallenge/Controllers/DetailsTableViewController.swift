@@ -10,7 +10,7 @@ import UIKit
 import SafariServices
 import RxSwift
 
-class DetailsTableViewController: UITableViewController {
+final class DetailsTableViewController: UITableViewController {
     // Launch general info
     @IBOutlet weak var launchName: UILabel!
     @IBOutlet weak var launchDate: UILabel!
@@ -44,11 +44,11 @@ class DetailsTableViewController: UITableViewController {
         fetchLaunch()
     }
 
-    // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return super.tableView(tableView, numberOfRowsInSection: 0)
     }
 
+    // MARK: - Wikipedia feature
     @IBAction func moreInfoTapped(_ sender: Any) {
         let svc = SFSafariViewController(url: rocket.wikipedia)
         present(svc, animated: true, completion: nil)
@@ -57,6 +57,7 @@ class DetailsTableViewController: UITableViewController {
 
 extension DetailsTableViewController {
     
+    // MARK : - Launches
     private func fetchLaunch() {
         
         let url = URL(string: Constants.base_api + Constants.api_launches + String(launchFlightNumber))!
@@ -76,6 +77,7 @@ extension DetailsTableViewController {
         
     }
     
+    // update UI
     func set(_ launch: Launch) {
         launchName.text = launch.missionName
         launchDate.text = launch.date.formatted
@@ -84,6 +86,7 @@ extension DetailsTableViewController {
         launchSitename.text = launch.site
     }
     
+    // MARK : - Rockets
     private func fetchRocket(by id: String) {
         
         let url = URL(string: Constants.base_api + Constants.api_rockets + id)!
@@ -103,7 +106,8 @@ extension DetailsTableViewController {
         
     }
     
-    func set(_ rocket: Rocket) {
+    // update UI
+    private func set(_ rocket: Rocket) {
         rocketName.text = rocket.rocketName
         rocketCountry.text = rocket.country
         rocketCompany.text = rocket.company
