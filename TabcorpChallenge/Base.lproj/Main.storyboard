@@ -27,22 +27,22 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Igx-3K-TYX">
-                                            <rect key="frame" x="16" y="16" width="568" height="108.5"/>
+                                            <rect key="frame" x="16" y="16" width="382" height="108.5"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mission Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="emA-LR-Yk9" userLabel="Mission Label">
-                                                    <rect key="frame" x="0.0" y="0.0" width="568" height="33.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="382" height="33.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="70o-xB-0ed" userLabel="Data Label">
-                                                    <rect key="frame" x="0.0" y="37.5" width="568" height="33.5"/>
+                                                    <rect key="frame" x="0.0" y="37.5" width="382" height="33.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Status Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ee4-6G-97F" userLabel="Status Label">
-                                                    <rect key="frame" x="0.0" y="75" width="568" height="33.5"/>
+                                                    <rect key="frame" x="0.0" y="75" width="382" height="33.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -372,7 +372,7 @@
                     <navigationItem key="navigationItem" title="Launches" id="FCE-zM-27z">
                         <barButtonItem key="rightBarButtonItem" title="Filter" id="iup-ck-UW4">
                             <connections>
-                                <action selector="successFilterTapped:" destination="nhU-KE-aIY" id="0bi-V3-eCk"/>
+                                <action selector="launchStatusButtonTapped:" destination="nhU-KE-aIY" id="s2b-R6-mV9"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
