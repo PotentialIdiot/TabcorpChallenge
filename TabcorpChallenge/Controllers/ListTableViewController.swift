@@ -13,16 +13,16 @@ enum SortFilter {
     case letter, year
 }
 
-class ListTableViewController: UITableViewController {
+final class ListTableViewController: UITableViewController {
     
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
 
-    var launches = [Launch]()
+    private var launches = [Launch]()
 
-    var sectionHeaders = [String]()
-    var launchesVMDict = [String: LaunchListViewModel]()
+    private var sectionHeaders = [String]()
+    private var launchesVMDict = [String: LaunchListViewModel]()
     
-    var sortFilter: SortFilter = .letter
+    private var sortFilter: SortFilter = .letter
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,7 +33,7 @@ class ListTableViewController: UITableViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(updateSortFilter), name: .updateSortFilter, object: nil)
     }
     
-    @objc func updateLaunchStatusFilter(_ value: Notification) {
+    @objc private func updateLaunchStatusFilter(_ value: Notification) {
         var filteredLaunches = [Launch]()
         
         let value = value.object as! LaunchStatus
@@ -52,7 +52,7 @@ class ListTableViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    @objc func updateSortFilter(_ value: Notification) {
+    @objc private func updateSortFilter(_ value: Notification) {
         let value = value.object as! Int
         switch value {
         case 0:
