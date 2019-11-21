@@ -29,14 +29,14 @@ class ListTableViewController: UITableViewController {
         
         fetchLaunches()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(updateSuccessFilter), name: .updateSuccessFilter, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateLaunchStatusFilter), name: .updateLaunchStatusFilter, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateSortFilter), name: .updateSortFilter, object: nil)
     }
     
-    @objc func updateSuccessFilter(_ value: Notification) {
+    @objc func updateLaunchStatusFilter(_ value: Notification) {
         var filteredLaunches = [Launch]()
         
-        let value = value.object as! SuccessFilter
+        let value = value.object as! LaunchStatus
         switch value {
         case .success:
             filteredLaunches = launches.filter({ $0.succeeded == true })

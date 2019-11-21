@@ -11,7 +11,12 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-enum SuccessFilter: String {
+extension Notification.Name {
+    static let updateSortFilter = Notification.Name("updateSortFilter")
+    static let updateLaunchStatusFilter = Notification.Name("updateLaunchStatusFilter")
+}
+
+enum LaunchStatus: String {
     case success
     case failure
     case unknown
@@ -25,7 +30,20 @@ class MainViewController: UIViewController {
     @IBOutlet weak var sortFilter: UISegmentedControl!
     
     override func viewDidLoad() {
-        // setup sort filter
+        // MARK: - Filter #2 - by Alphabets and Date
+        setupSortFilter()
+    }
+    
+    // MARK: - Filter #1 - by Launch Status
+    @IBAction func launchStatusButtonTapped(_ sender: Any) {
+        let selectionAlert = launchStatusSelectionAlert()
+        self.present(selectionAlert, animated: true)
+    }
+
+}
+
+extension MainViewController {
+    private func setupSortFilter() {
         sortFilter.rx.controlEvent(.valueChanged)
             .asObservable()
             .map { self.sortFilter.selectedSegmentIndex }
@@ -34,29 +52,23 @@ class MainViewController: UIViewController {
             }).disposed(by: disposeBag)
     }
     
-    @IBAction func successFilterTapped(_ sender: Any) {
+    private func launchStatusSelectionAlert() -> UIAlertController {
         let title = "Launch Status"
         let alert = UIAlertController(title: title, message: "", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: SuccessFilter.success.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateSuccessFilter, object: SuccessFilter.success)
+        alert.addAction(UIAlertAction(title: LaunchStatus.success.rawValue, style: .default, handler: { _ in
+            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.success)
         }))
-        alert.addAction(UIAlertAction(title: SuccessFilter.failure.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateSuccessFilter, object: SuccessFilter.failure)
+        alert.addAction(UIAlertAction(title: LaunchStatus.failure.rawValue, style: .default, handler: { _ in
+            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.failure)
         }))
-        alert.addAction(UIAlertAction(title: SuccessFilter.unknown.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateSuccessFilter, object: SuccessFilter.unknown)
+        alert.addAction(UIAlertAction(title: LaunchStatus.unknown.rawValue, style: .default, handler: { _ in
+            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.unknown)
         }))
-        alert.addAction(UIAlertAction(title: SuccessFilter.all.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateSuccessFilter, object: SuccessFilter.all)
+        alert.addAction(UIAlertAction(title: LaunchStatus.all.rawValue, style: .default, handler: { _ in
+            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.all)
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
-        self.present(alert, animated: true)
+        return alert
     }
-
-}
-
-extension Notification.Name {
-    static let updateSortFilter = Notification.Name("updateSortFilter")
-    static let updateSuccessFilter = Notification.Name("updateSuccessFilter")
 }
