@@ -10,6 +10,8 @@ import Foundation
 import RxSwift
 import RxCocoa
 
+// MARK : - Launch List View Model
+
 struct LaunchListViewModel {
     let launchesVM: [LaunchViewModel]
 }
@@ -28,6 +30,9 @@ extension LaunchListViewModel {
         return self.launchesVM[index]
     }
 }
+
+
+// MARK : - Launch View Model
 
 struct LaunchViewModel {
     
