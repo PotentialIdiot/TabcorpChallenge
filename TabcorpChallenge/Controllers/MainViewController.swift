@@ -32,6 +32,7 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         // MARK: - Filter #2 - by Alphabets and Date
         setupSortFilter()
+        generateJSONParameter(Launch.CodingKeys.self)
     }
     
     // MARK: - Filter #1 - by Launch Status

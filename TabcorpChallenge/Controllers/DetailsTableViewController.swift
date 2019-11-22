@@ -60,7 +60,8 @@ extension DetailsTableViewController {
     // MARK : - Launches
     private func fetchLaunch() {
         
-        let url = URL(string: Constants.base_api + Constants.api_launches + String(launchFlightNumber))!
+        let filterParams = generateJSONParameter(Launch.CodingKeys.self)
+        let url = URL(string: Constants.base_api + Constants.api_launches + String(launchFlightNumber) + filterParams)!
         let resource = Resource<Launch>(url: url)
         
         URLRequest.load(resource: resource)
@@ -89,7 +90,8 @@ extension DetailsTableViewController {
     // MARK : - Rockets
     private func fetchRocket(by id: String) {
         
-        let url = URL(string: Constants.base_api + Constants.api_rockets + id)!
+        let filterParams = generateJSONParameter(Rocket.CodingKeys.self)
+        let url = URL(string: Constants.base_api + Constants.api_rockets + id + filterParams)!
         let resource = Resource<Rocket>(url: url)
         
         URLRequest.load(resource: resource)

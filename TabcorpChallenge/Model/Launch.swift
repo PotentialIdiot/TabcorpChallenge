@@ -29,7 +29,7 @@ struct Launch {
 }
 
 extension Launch: Decodable {
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         // identifier
         case flightNumber = "flight_number"
 

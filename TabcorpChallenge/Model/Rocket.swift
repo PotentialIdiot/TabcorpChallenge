@@ -17,7 +17,7 @@ struct Rocket {
 }
 
 extension Rocket: Decodable {
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case rocketName = "rocket_name"
         case country
         case company
