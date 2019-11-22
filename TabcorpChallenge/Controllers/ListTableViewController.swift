@@ -17,8 +17,8 @@ final class ListTableViewController: UITableViewController {
     private var launches = [Launch]()
     
     // processed data, used by table data source
-    var sectionHeaders = [String]()
     var launchesVMDict = [String: LaunchListViewModel]()
+    var sectionHeaders = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()

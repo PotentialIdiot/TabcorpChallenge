@@ -32,21 +32,21 @@ final class DetailsTableViewController: UITableViewController {
     @IBOutlet weak var wikipediaButton: UIButton!
     
     var launchFlightNumber: Int!
-    var launch: Launch!
-    var rocket: Rocket!
+    private var launch: Launch!
+    private var rocket: Rocket!
     
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         wikipediaButton.isEnabled = false
         
         fetchLaunch(completion: { result in
-            self.set(result)
+            self.set(launch: result)
             self.tableView.reloadData()
             
             self.fetchRocket(result.rocketId, completion: { result in
-                self.set(result)
+                self.set(rocket: result)
                 self.tableView.reloadData()
                 self.wikipediaButton.isEnabled = true
             })
@@ -86,7 +86,7 @@ extension DetailsTableViewController {
     }
     
     // update UI
-    func set(_ launch: Launch) {
+    private func set(launch: Launch) {
         launchName.text = launch.missionName
         launchDate.text = launch.date.formatted
         launchStatus.text = launch.succeeded?.formatted ?? "Unknown"
@@ -114,7 +114,7 @@ extension DetailsTableViewController {
     }
     
     // update UI
-    private func set(_ rocket: Rocket) {
+    private func set(rocket: Rocket) {
         rocketName.text = rocket.rocketName
         rocketCountry.text = rocket.country
         rocketCompany.text = rocket.company

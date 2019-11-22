@@ -38,14 +38,15 @@ class MainViewController: UIViewController {
     
     let disposeBag = DisposeBag()
     
+    // MARK: - Filter #1 - by Letters and Date
     @IBOutlet weak var orderByFilter: UISegmentedControl!
     
     override func viewDidLoad() {
-        // MARK: - Filter #1 - by Letters and Date
         orderByFilter.rx.controlEvent(.valueChanged)
             .asObservable()
             .map { self.orderByFilter.selectedSegmentIndex }
             .subscribe(onNext: { index in
+                // update state
                 stateManager.orderFilter = OrderBy.init(rawValue: index)
             }).disposed(by: disposeBag)
     }
