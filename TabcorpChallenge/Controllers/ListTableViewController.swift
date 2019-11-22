@@ -26,44 +26,15 @@ final class ListTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        fetchLaunches()
-
-        NotificationCenter.default.addObserver(self, selector: #selector(updateLaunchStatusFilter), name: .updateLaunchStatusFilter, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(updateSortFilter), name: .updateSortFilter, object: nil)
+        fetchLaunches(completion: {
+            self.processData()
+        })
+        NotificationCenter.default.addObserver(self, selector: #selector(updateTable), name: .updateTable, object: nil)
     }
     
-    @objc private func updateLaunchStatusFilter(_ value: Notification) {
-        var filteredLaunches = [Launch]()
-        
-        let value = value.object as! LaunchStatus
-        switch value {
-        case .success:
-            filteredLaunches = launches.filter({ $0.succeeded == true })
-        case .failure:
-            filteredLaunches = launches.filter({ $0.succeeded == false })
-        case .unknown:
-            filteredLaunches = launches.filter({ $0.succeeded == nil })
-        case .all:
-            filteredLaunches = launches
-        }
-        
-        sort(filteredLaunches, by: sortFilter)
+    @objc private func updateTable(_ value: Notification) {
+        processData()
         tableView.reloadData()
-    }
-    
-    @objc private func updateSortFilter(_ value: Notification) {
-        let value = value.object as! Int
-        switch value {
-        case 0:
-            sort(launches, by: .letter)
-            tableView.reloadData()
-        case 1:
-            sort(launches, by: .year)
-            tableView.reloadData()
-        default:
-            assertionFailure("unhandled switch case")
-        }
     }
     
 }
@@ -118,7 +89,7 @@ extension ListTableViewController {
 }
 
 private extension ListTableViewController {
-    private func fetchLaunches() {
+    private func fetchLaunches(completion: @escaping ()->()) {
         
         let filterParams = generateJSONParameters(Launch.CodingKeys.self)
         let url = URL(string: Constants.base_api + Constants.api_launches + "?limit=10&" + filterParams)!
@@ -128,19 +99,48 @@ private extension ListTableViewController {
             .subscribe(onNext: { [weak self] result in
                 if let result = result {
                     self?.launches = result
-                    self?.sort(result, by: .letter)
+                    
                     DispatchQueue.main.async {
+                        completion()
                         self?.tableView.reloadData()
                     }
                 }
             }).disposed(by: disposeBag)
         
     }
+}
+
+extension ListTableViewController {
+    private func processData() {
+        let filteredByStatus = filter(launches, by: stateManager.statusFilter)
+        let sortedByOrder = sort(filteredByStatus, by: stateManager.orderFilter)
+        launchesVMDict = sortedByOrder.0
+        sectionHeaders = sortedByOrder.1
+    }
+}
+
+extension ListTableViewController {
+    private func filter(_ launches: [Launch], by status: LaunchStatus) -> [Launch] {
+        var filteredLaunches = [Launch]()
+        
+        switch status {
+        case .success:
+            filteredLaunches = launches.filter({ $0.succeeded == true })
+        case .failure:
+            filteredLaunches = launches.filter({ $0.succeeded == false })
+        case .unknown:
+            filteredLaunches = launches.filter({ $0.succeeded == nil })
+        case .all:
+            filteredLaunches = launches
+        }
+        
+        return filteredLaunches
+    }
     
-    private func sort(_ launches: [Launch], by filter: SortFilter) {
+    private func sort(_ launches: [Launch], by order: OrderBy) -> ([String:LaunchListViewModel],[String]){
         // group launches by filter
         var groupedLaunches = [String: [Launch]]()
-        switch filter {
+        switch order {
         case .letter:
             groupedLaunches = Dictionary(grouping: launches, by: { String($0.missionName.uppercased().first!) })
         case .year:
@@ -158,9 +158,9 @@ private extension ListTableViewController {
             groupedLaunchesVM[key] = groupedLaunches[key].map { LaunchListViewModel($0) }
         }
         
-        launchesVMDict = groupedLaunchesVM
-        sectionHeaders = Array(groupedLaunches.keys).sorted()
+        let launchesVMDict = groupedLaunchesVM
+        let sectionHeaders = Array(groupedLaunches.keys).sorted()
         
-        sortFilter = filter
+        return (launchesVMDict, sectionHeaders)
     }
 }

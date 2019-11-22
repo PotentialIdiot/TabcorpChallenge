@@ -11,16 +11,27 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-extension Notification.Name {
-    static let updateSortFilter = Notification.Name("updateSortFilter")
-    static let updateLaunchStatusFilter = Notification.Name("updateLaunchStatusFilter")
-}
-
 enum LaunchStatus: String {
     case success
     case failure
     case unknown
     case all
+}
+
+enum OrderBy: Int {
+    case letter = 0
+    case year
+    
+    init(rawValue: Int) {
+        switch rawValue {
+        case OrderBy.letter.rawValue:
+            self = OrderBy.letter
+        case OrderBy.year.rawValue:
+            self = OrderBy.year
+        default:
+            self = OrderBy.letter
+        }
+    }
 }
 
 class MainViewController: UIViewController {
@@ -32,7 +43,6 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         // MARK: - Filter #2 - by Alphabets and Date
         setupSortFilter()
-        generateJSONParameters(Launch.CodingKeys.self)
     }
     
     // MARK: - Filter #1 - by Launch Status
@@ -49,7 +59,7 @@ extension MainViewController {
             .asObservable()
             .map { self.sortFilter.selectedSegmentIndex }
             .subscribe(onNext: { index in
-                NotificationCenter.default.post(name: .updateSortFilter, object: index)
+                stateManager.orderFilter = OrderBy.init(rawValue: index)
             }).disposed(by: disposeBag)
     }
     
@@ -57,16 +67,16 @@ extension MainViewController {
         let title = "Launch Status"
         let alert = UIAlertController(title: title, message: "", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: LaunchStatus.success.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.success)
+            stateManager.statusFilter = LaunchStatus.success
         }))
         alert.addAction(UIAlertAction(title: LaunchStatus.failure.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.failure)
+            stateManager.statusFilter = LaunchStatus.failure
         }))
         alert.addAction(UIAlertAction(title: LaunchStatus.unknown.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.unknown)
+            stateManager.statusFilter = LaunchStatus.unknown
         }))
         alert.addAction(UIAlertAction(title: LaunchStatus.all.rawValue, style: .default, handler: { _ in
-            NotificationCenter.default.post(name: .updateLaunchStatusFilter, object: LaunchStatus.all)
+            stateManager.statusFilter = LaunchStatus.all
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
