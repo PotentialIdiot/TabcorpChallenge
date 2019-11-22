@@ -377,7 +377,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="sortFilter" destination="V54-pQ-GXe" id="7dw-A6-aoF"/>
+                        <outlet property="orderByFilter" destination="V54-pQ-GXe" id="onE-6p-ebH"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jiU-BW-T5E" userLabel="First Responder" sceneMemberID="firstResponder"/>

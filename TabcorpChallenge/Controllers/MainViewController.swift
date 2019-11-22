@@ -38,43 +38,45 @@ class MainViewController: UIViewController {
     
     let disposeBag = DisposeBag()
     
-    @IBOutlet weak var sortFilter: UISegmentedControl!
+    @IBOutlet weak var orderByFilter: UISegmentedControl!
     
     override func viewDidLoad() {
-        // MARK: - Filter #2 - by Alphabets and Date
-        setupSortFilter()
-    }
-    
-    // MARK: - Filter #1 - by Launch Status
-    @IBAction func launchStatusButtonTapped(_ sender: Any) {
-        let selectionAlert = launchStatusSelectionAlert()
-        self.present(selectionAlert, animated: true)
+        // MARK: - Filter #1 - by Letters and Date
+        orderByFilter.rx.controlEvent(.valueChanged)
+            .asObservable()
+            .map { self.orderByFilter.selectedSegmentIndex }
+            .subscribe(onNext: { index in
+                stateManager.orderFilter = OrderBy.init(rawValue: index)
+            }).disposed(by: disposeBag)
     }
 
 }
 
 extension MainViewController {
-    private func setupSortFilter() {
-        sortFilter.rx.controlEvent(.valueChanged)
-            .asObservable()
-            .map { self.sortFilter.selectedSegmentIndex }
-            .subscribe(onNext: { index in
-                stateManager.orderFilter = OrderBy.init(rawValue: index)
-            }).disposed(by: disposeBag)
+
+    // MARK: - Filter #2 - by Launch Status
+    @IBAction func launchStatusButtonTapped(_ sender: Any) {
+        let selectionAlert = launchStatusSelectionAlert()
+        self.present(selectionAlert, animated: true)
     }
     
     private func launchStatusSelectionAlert() -> UIAlertController {
         let title = "Launch Status"
         let alert = UIAlertController(title: title, message: "", preferredStyle: .alert)
+        
+        // Success
         alert.addAction(UIAlertAction(title: LaunchStatus.success.rawValue, style: .default, handler: { _ in
             stateManager.statusFilter = LaunchStatus.success
         }))
+        // Failure
         alert.addAction(UIAlertAction(title: LaunchStatus.failure.rawValue, style: .default, handler: { _ in
             stateManager.statusFilter = LaunchStatus.failure
         }))
+        // Unknown
         alert.addAction(UIAlertAction(title: LaunchStatus.unknown.rawValue, style: .default, handler: { _ in
             stateManager.statusFilter = LaunchStatus.unknown
         }))
+        // All
         alert.addAction(UIAlertAction(title: LaunchStatus.all.rawValue, style: .default, handler: { _ in
             stateManager.statusFilter = LaunchStatus.all
         }))

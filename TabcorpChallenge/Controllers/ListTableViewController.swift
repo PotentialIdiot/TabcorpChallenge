@@ -9,85 +9,51 @@
 import UIKit
 import RxSwift
 
-enum SortFilter {
-    case letter, year
-}
-
 final class ListTableViewController: UITableViewController {
     
-    private let disposeBag = DisposeBag()
-
-    private var launches = [Launch]()
-
-    private var sectionHeaders = [String]()
-    private var launchesVMDict = [String: LaunchListViewModel]()
+    let disposeBag = DisposeBag()
     
-    private var sortFilter: SortFilter = .letter
+    // raw data
+    private var launches = [Launch]()
+    
+    // processed data, used by table data source
+    var sectionHeaders = [String]()
+    var launchesVMDict = [String: LaunchListViewModel]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // setup data
         fetchLaunches(completion: {
-            self.processData()
+            self.processData(to: &self.launchesVMDict, &self.sectionHeaders)
         })
+        
+        // observe changes
         NotificationCenter.default.addObserver(self, selector: #selector(updateTable), name: .updateTable, object: nil)
     }
     
     @objc private func updateTable(_ value: Notification) {
-        processData()
+        // update data
+        processData(to: &launchesVMDict, &sectionHeaders)
         tableView.reloadData()
     }
     
-}
-
-extension ListTableViewController {
-    // MARK: - Table view data source
-    
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return String(sectionHeaders[section])
-    }
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return sectionHeaders.count
-    }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let key = sectionHeaders[section]
-        return launchesVMDict[key]?.launchesVM.count ?? 0
-    }
-
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "LaunchCell", for: indexPath) as! LaunchCell
-
-        // Configure the cell...
-        let key = sectionHeaders[indexPath.section]
-        let launchVM = launchesVMDict[key]!.launchAt(indexPath.row)
-        
-        launchVM.mission.asDriver(onErrorJustReturn: "")
-            .drive(cell.missionLabel.rx.text)
-            .disposed(by: disposeBag)
-        
-        launchVM.date.asDriver(onErrorJustReturn: "")
-            .drive(cell.dateLabel.rx.text)
-            .disposed(by: disposeBag)
-        
-        launchVM.status.asDriver(onErrorJustReturn: "")
-            .drive(cell.statusLabel.rx.text)
-            .disposed(by: disposeBag)
-
-        return cell
-    }
-    
+    // MARK : - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let indexPath = tableView.indexPathForSelectedRow,
+            // detail view controller
             let detailsViewController = segue.destination as? DetailsTableViewController {
             let key = sectionHeaders[indexPath.section]
             let flightNumber = launchesVMDict[key]!.launchAt(indexPath.row).launch.flightNumber
+            // pass detail view the flightNumber identifier
             detailsViewController.launchFlightNumber = flightNumber
         }
     }
 
 }
 
+
+// MARK : - Data
 private extension ListTableViewController {
     private func fetchLaunches(completion: @escaping ()->()) {
         
@@ -108,19 +74,21 @@ private extension ListTableViewController {
             }).disposed(by: disposeBag)
         
     }
-}
 
-extension ListTableViewController {
-    private func processData() {
-        let filteredByStatus = filter(launches, by: stateManager.statusFilter)
-        let sortedByOrder = sort(filteredByStatus, by: stateManager.orderFilter)
-        launchesVMDict = sortedByOrder.0
-        sectionHeaders = sortedByOrder.1
+    private func processData(to launchesVMDict: inout [String: LaunchListViewModel],
+                             _ sectionHeaders: inout [String]) {
+        let filteredData    = filter(launches)
+        let sortedData      = sort(filteredData)
+        launchesVMDict = sortedData.0
+        sectionHeaders = sortedData.1
     }
 }
 
+
+// MARK : - Filters
 extension ListTableViewController {
-    private func filter(_ launches: [Launch], by status: LaunchStatus) -> [Launch] {
+    private func filter(_ launches: [Launch]) -> [Launch] {
+        let status = stateManager.statusFilter
         var filteredLaunches = [Launch]()
         
         switch status {
@@ -137,8 +105,9 @@ extension ListTableViewController {
         return filteredLaunches
     }
     
-    private func sort(_ launches: [Launch], by order: OrderBy) -> ([String:LaunchListViewModel],[String]){
+    private func sort(_ launches: [Launch]) -> ([String:LaunchListViewModel], [String]){
         // group launches by filter
+        let order = stateManager.orderFilter
         var groupedLaunches = [String: [Launch]]()
         switch order {
         case .letter:
@@ -158,6 +127,7 @@ extension ListTableViewController {
             groupedLaunchesVM[key] = groupedLaunches[key].map { LaunchListViewModel($0) }
         }
         
+        // result
         let launchesVMDict = groupedLaunchesVM
         let sectionHeaders = Array(groupedLaunches.keys).sorted()
         

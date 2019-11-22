@@ -10,6 +10,7 @@
 		277E16A36162ABEA034CBA48 /* Pods_TabcorpChallenge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FF68DAD2EB462EBF115E3096 /* Pods_TabcorpChallenge.framework */; };
 		EB506616238767E8001D9120 /* JSONRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB506615238767E8001D9120 /* JSONRequest.swift */; };
 		EB5066192387A6D3001D9120 /* StateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB5066182387A6D3001D9120 /* StateManager.swift */; };
+		EB50661B2387BA18001D9120 /* ListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB50661A2387BA18001D9120 /* ListDataSource.swift */; };
 		EB529DF52377CA8C00986FEF /* ListTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB529DF42377CA8C00986FEF /* ListTableViewController.swift */; };
 		EB529DF72377F9E700986FEF /* DetailsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB529DF62377F9E700986FEF /* DetailsTableViewController.swift */; };
 		EB529DF923782F7F00986FEF /* Launch.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB529DF823782F7F00986FEF /* Launch.swift */; };
@@ -31,6 +32,7 @@
 		E91CF3AD8FD4963825C2C6B7 /* Pods-TabcorpChallenge.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TabcorpChallenge.debug.xcconfig"; path = "Target Support Files/Pods-TabcorpChallenge/Pods-TabcorpChallenge.debug.xcconfig"; sourceTree = "<group>"; };
 		EB506615238767E8001D9120 /* JSONRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRequest.swift; sourceTree = "<group>"; };
 		EB5066182387A6D3001D9120 /* StateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateManager.swift; sourceTree = "<group>"; };
+		EB50661A2387BA18001D9120 /* ListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDataSource.swift; sourceTree = "<group>"; };
 		EB529DF42377CA8C00986FEF /* ListTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTableViewController.swift; sourceTree = "<group>"; };
 		EB529DF62377F9E700986FEF /* DetailsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsTableViewController.swift; sourceTree = "<group>"; };
 		EB529DF823782F7F00986FEF /* Launch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Launch.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			children = (
 				EB529DFE2379943200986FEF /* MainViewController.swift */,
 				EB529DF42377CA8C00986FEF /* ListTableViewController.swift */,
+				EB50661A2387BA18001D9120 /* ListDataSource.swift */,
 				EB529DF62377F9E700986FEF /* DetailsTableViewController.swift */,
 			);
 			path = Controllers;
@@ -290,6 +293,7 @@
 				EB529DF72377F9E700986FEF /* DetailsTableViewController.swift in Sources */,
 				EB529E082379B8CB00986FEF /* LaunchViewModel.swift in Sources */,
 				EB5066192387A6D3001D9120 /* StateManager.swift in Sources */,
+				EB50661B2387BA18001D9120 /* ListDataSource.swift in Sources */,
 				EB6D217223769688004D7DB4 /* AppDelegate.swift in Sources */,
 				EB529DFB2378301500986FEF /* Rocket.swift in Sources */,
 				EB529E062379B2E800986FEF /* Helper.swift in Sources */,

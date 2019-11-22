@@ -41,7 +41,16 @@ final class DetailsTableViewController: UITableViewController {
         super.viewDidLoad()
         wikipediaButton.isEnabled = false
         
-        fetchLaunch()
+        fetchLaunch(completion: { result in
+            self.set(result)
+            self.tableView.reloadData()
+            
+            self.fetchRocket(result.rocketId, completion: { result in
+                self.set(result)
+                self.tableView.reloadData()
+                self.wikipediaButton.isEnabled = true
+            })
+        })
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -58,7 +67,7 @@ final class DetailsTableViewController: UITableViewController {
 extension DetailsTableViewController {
     
     // MARK : - Launches
-    private func fetchLaunch() {
+    private func fetchLaunch(completion: @escaping (Launch) -> ()) {
         
         let filterParams = generateJSONParameters(Launch.CodingKeys.self)
         let url = URL(string: Constants.base_api + Constants.api_launches + String(launchFlightNumber) + "?" + filterParams)!
@@ -68,10 +77,8 @@ extension DetailsTableViewController {
             .subscribe(onNext: { [weak self] result in
                 if let result = result {
                     self?.launch = result
-                    self?.fetchRocket(by: result.rocketId)
                     DispatchQueue.main.async {
-                        self?.set(result)
-                        self?.tableView.reloadData()
+                        completion(result)
                     }
                 }
             }).disposed(by: disposeBag)
@@ -88,7 +95,7 @@ extension DetailsTableViewController {
     }
     
     // MARK : - Rockets
-    private func fetchRocket(by id: String) {
+    private func fetchRocket(_ id: String, completion: @escaping (Rocket) -> ()) {
         
         let filterParams = generateJSONParameters(Rocket.CodingKeys.self)
         let url = URL(string: Constants.base_api + Constants.api_rockets + id + "?" + filterParams)!
@@ -99,9 +106,7 @@ extension DetailsTableViewController {
                 if let result = result {
                     self?.rocket = result
                     DispatchQueue.main.async {
-                        self?.set(result)
-                        self?.tableView.reloadData()
-                        self?.wikipediaButton.isEnabled = true
+                        completion(result)
                     }
                 }
             }).disposed(by: disposeBag)
