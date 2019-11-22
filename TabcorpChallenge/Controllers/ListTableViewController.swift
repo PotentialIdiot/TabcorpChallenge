@@ -77,10 +77,13 @@ private extension ListTableViewController {
 
     private func processData(to launchesVMDict: inout [String: LaunchListViewModel],
                              _ sectionHeaders: inout [String]) {
-        let filteredData    = filter(launches)
-        let sortedData      = sort(filteredData)
-        launchesVMDict = sortedData.0
-        sectionHeaders = sortedData.1
+        let filteredData: [Launch]                          = filter(launches)
+        let groupedData: [String: [Launch]]                 = group(filteredData)
+        let transformedData: [String:LaunchListViewModel]   = transform(groupedData)
+        let sections: [String]                              = Array(groupedData.keys).sorted()
+        
+        launchesVMDict = transformedData
+        sectionHeaders = sections
     }
 }
 
@@ -90,7 +93,6 @@ extension ListTableViewController {
     private func filter(_ launches: [Launch]) -> [Launch] {
         let status = stateManager.statusFilter
         var filteredLaunches = [Launch]()
-        
         switch status {
         case .success:
             filteredLaunches = launches.filter({ $0.succeeded == true })
@@ -101,15 +103,14 @@ extension ListTableViewController {
         case .all:
             filteredLaunches = launches
         }
-        
         return filteredLaunches
     }
     
-    private func sort(_ launches: [Launch]) -> ([String:LaunchListViewModel], [String]){
+    private func group(_ launches: [Launch]) -> [String: [Launch]] {
         // group launches by filter
-        let order = stateManager.orderFilter
+        let orderBy = stateManager.orderFilter
         var groupedLaunches = [String: [Launch]]()
-        switch order {
+        switch orderBy {
         case .letter:
             groupedLaunches = Dictionary(grouping: launches, by: { String($0.missionName.uppercased().first!) })
         case .year:
@@ -120,17 +121,14 @@ extension ListTableViewController {
             })
             
         }
-        
-        // transform [launch] -> launchListViewModel
-        var groupedLaunchesVM = [String: LaunchListViewModel]()
+        return groupedLaunches
+    }
+    
+    private func transform(_ groupedLaunches: [String: [Launch]]) -> [String:LaunchListViewModel] {
+        var result = [String: LaunchListViewModel]()
         for key in groupedLaunches.keys {
-            groupedLaunchesVM[key] = groupedLaunches[key].map { LaunchListViewModel($0) }
+            result[key] = groupedLaunches[key].map { LaunchListViewModel($0) }
         }
-        
-        // result
-        let launchesVMDict = groupedLaunchesVM
-        let sectionHeaders = Array(groupedLaunches.keys).sorted()
-        
-        return (launchesVMDict, sectionHeaders)
+        return result
     }
 }
