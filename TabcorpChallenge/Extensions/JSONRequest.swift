@@ -9,7 +9,8 @@
 import Foundation
 
 // MARK : - Compose a filter url string from data Model parameters
-func generateJSONParameter<T>(_ : T.Type) -> String where T: CaseIterable & RawRepresentable, T.RawValue == String, T.AllCases == [T] {
+func generateJSONParameters<T>(_ : T.Type) -> String where T: CaseIterable & RawRepresentable, T.RawValue == String, T.AllCases == [T] {
+    
     var urlString = "filter="
     
     for key in T.allCases {

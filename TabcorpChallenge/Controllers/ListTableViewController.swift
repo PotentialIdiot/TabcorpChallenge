@@ -120,7 +120,7 @@ extension ListTableViewController {
 private extension ListTableViewController {
     private func fetchLaunches() {
         
-        let filterParams = generateJSONParameter(Launch.CodingKeys.self)
+        let filterParams = generateJSONParameters(Launch.CodingKeys.self)
         let url = URL(string: Constants.base_api + Constants.api_launches + "?limit=10&" + filterParams)!
         let resource = Resource<[Launch]>(url: url)
         
